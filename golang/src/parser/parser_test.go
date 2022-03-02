@@ -130,6 +130,33 @@ func TestIdentifierExpression(t *testing.T) {
 	}
 }
 
+func TestBooleanExpression(t *testing.T) {
+	input := "true;"
+
+	l := lexer.New(input)
+	p := New(l)
+	pgm := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(pgm.Statements) != 1 {
+		t.Fatalf("pgm has not enough statements. get=%d", len(pgm.Statements))
+	}
+	stmt, ok := pgm.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", pgm.Statements[0])
+	}
+	boolean, ok := stmt.Expression.(*ast.Boolean) // boolean이 맞는지 확인.
+	if !ok {
+		t.Fatalf("exp not *ast.Boolean. got=%T", stmt.Expression)
+	}
+	if boolean.Value != true { // 식별자의 값이 foobar인지 확인
+		t.Fatalf("ident.Value not %s, got=%s", "foobar", "ident.Value")
+	}
+	if boolean.TokenLiteral() != "true" {
+		t.Errorf("ident.TokenLiteral not %s, got=%s", "foobar", boolean.TokenLiteral())
+	}
+}
+
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "5;"
 
@@ -157,7 +184,7 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	}
 }
 
-func TestParsingPrefixExpressoins(t *testing.T) {
+func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
 		input        string
 		operator     string
