@@ -20,6 +20,7 @@ const (
 )
 
 var precedences = map[token.TokenType]int{
+	token.LPAREN:   CALL,
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
 	token.LT:       LESSGREATER,
@@ -72,6 +73,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
+	p.registerInfix(token.LPAREN, p.parseCallExpression)
 
 	// 토큰을 두개 읽어서, curToken과 peekToken을 세팅
 	p.nextToken()
@@ -375,3 +377,40 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 
 	// 이런 메서드는 경계 조건만 검사하는 테스트를 별도로 구성하면 정말 도움이 된다.
 }
+
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	exp := &ast.CallExpression{Token: p.curToken, Function: function}
+	exp.Arguments = p.parseCallArguments()
+	return exp
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	args := []ast.Expression{}
+
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
+		return args
+	}
+
+	p.nextToken()
+	args = append(args, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		args = append(args, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return args
+}
+
+/*
+add는 식별자이므로 prefixParseFn인 parseIdentifier가 add를 파싱. 그리고 식별자 다음에 token.LPAREN이 나온다. token.LPAREN은 식별자와 인수 리스트 사이, 정중앙에 위치한다.
+그렇다, 우리는 token.LPAREN 과 연관된 infixParseFn을 등록해야한다.
+이렇게 해야 함수로 사용할 표현식(식별자 혹은 함수 리터럴)을 파싱하고, token.LPAREN과 연관된 infixParseFn을 검사한 뒤, 그 함수가 있으면 가져와서 이미 파싱한 표현식을 인수로 넘겨서 호출한다.
+그리고 언급한 infixParseFn안에서 인수 리스트를 파싱할 것이다.
+*/
