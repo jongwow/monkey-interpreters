@@ -186,10 +186,13 @@ func TestIntegerLiteralExpression(t *testing.T) {
 
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
-		input        string
-		operator     string
-		integerValue int64
-	}{{"!5;", "!", 5}, {"-15;", "-", 15}}
+		input    string
+		operator string
+		value    interface{}
+	}{
+		{"!5;", "!", 5},
+		{"-15;", "-", 15}, {"!true;", "!", true}, {"!false;", "!", false},
+	}
 
 	for _, tt := range prefixTests {
 		l := lexer.New(tt.input)
@@ -211,7 +214,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 		if exp.Operator != tt.operator {
 			t.Errorf("exp.Operator is not '%s'. got=%s", tt.operator, exp.Operator)
 		}
-		if !testIntegerLiteral(t, exp.Right, tt.integerValue) {
+		if !testLiteralExpression(t, exp.Right, tt.value) {
 			return
 		}
 	}
@@ -334,7 +337,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		},
 		{
 			"-1 * 2 + 3",
-			"(((-1) * 2) + 3) ",
+			"(((-1) * 2) + 3)",
 		},
 		{
 			"true",
@@ -346,11 +349,11 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		},
 		{
 			"3 > 5 == false",
-			"((3 > 5) == false",
+			"((3 > 5) == false)",
 		},
 		{
 			"3 > 5 == true",
-			"((3 > 5) == true",
+			"((3 > 5) == true)",
 		},
 	}
 
