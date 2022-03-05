@@ -15,11 +15,11 @@ func Eval(node ast.Node) object.Object {
 	switch node := node.(type) {
 	// 명령문
 	case *ast.Program:
-		return evalStatements(node.Statements)
+		return evalProgram(node)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
 	case *ast.BlockStatement:
-		return evalStatements(node.Statements)
+		return evalBlockStatements(node)
 	case *ast.IfExpression:
 		return evalIfExpression(node)
 	case *ast.ReturnStatement:
@@ -39,6 +39,18 @@ func Eval(node ast.Node) object.Object {
 		return evalInfixExpression(left, node.Operator, right)
 	}
 	return nil
+}
+
+func evalProgram(program *ast.Program) object.Object {
+	var result object.Object
+
+	for _, stmt := range program.Statements {
+		result = Eval(stmt)
+		if rv, ok := result.(*object.Return); ok {
+			return rv
+		}
+	}
+	return result
 }
 
 func evalIfExpression(ie *ast.IfExpression) object.Object {
@@ -144,13 +156,13 @@ func nativeBoolToBooleanObject(input bool) object.Object {
 	return FALSE
 }
 
-func evalStatements(statements []ast.Statement) object.Object {
+func evalBlockStatements(block *ast.BlockStatement) object.Object {
 	var result object.Object
 
-	for _, statement := range statements {
+	for _, statement := range block.Statements {
 		result = Eval(statement)
-		if returnValue, ok := result.(*object.Return); ok {
-			return returnValue.Value
+		if result != nil && result.Type() == object.RETURN_OBJ {
+			return result
 		}
 	}
 	return result
