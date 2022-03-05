@@ -47,7 +47,7 @@ func evalProgram(program *ast.Program) object.Object {
 	for _, stmt := range program.Statements {
 		result = Eval(stmt)
 		if rv, ok := result.(*object.Return); ok {
-			return rv
+			return rv.Value
 		}
 	}
 	return result
