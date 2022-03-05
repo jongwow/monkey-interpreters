@@ -18,6 +18,11 @@ func Eval(node ast.Node) object.Object {
 		return evalStatements(node.Statements)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
+	// 표현식
+	case *ast.IntegerLiteral:
+		return &object.Integer{Value: node.Value}
+	case *ast.Boolean:
+		return nativeBoolToBooleanObject(node.Value)
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
 		return evalPrefixExpression(node.Operator, right)
@@ -25,20 +30,21 @@ func Eval(node ast.Node) object.Object {
 		left := Eval(node.Left)
 		right := Eval(node.Right)
 		return evalInfixExpression(left, node.Operator, right)
-	// 표현식
-	case *ast.IntegerLiteral:
-		return &object.Integer{Value: node.Value}
-	case *ast.Boolean:
-		return nativeBoolToBooleanObject(node.Value)
 	}
 	return nil
 }
 
 func evalInfixExpression(left object.Object, operator string, right object.Object) object.Object {
-	if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(left, operator, right)
+	case operator == "==":
+		return nativeBoolToBooleanObject(left == right)
+	case operator == "!=":
+		return nativeBoolToBooleanObject(left != right)
+	default:
+		return NULL
 	}
-	return NULL
 }
 
 func evalIntegerInfixExpression(left object.Object, operator string, right object.Object) object.Object {
