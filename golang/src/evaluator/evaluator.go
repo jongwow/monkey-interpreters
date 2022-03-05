@@ -22,6 +22,9 @@ func Eval(node ast.Node) object.Object {
 		return evalStatements(node.Statements)
 	case *ast.IfExpression:
 		return evalIfExpression(node)
+	case *ast.ReturnStatement:
+		val := Eval(node.ReturnValue)
+		return &object.Return{Value: val}
 	// 표현식
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -146,6 +149,9 @@ func evalStatements(statements []ast.Statement) object.Object {
 
 	for _, statement := range statements {
 		result = Eval(statement)
+		if returnValue, ok := result.(*object.Return); ok {
+			return returnValue.Value
+		}
 	}
 	return result
 
