@@ -174,6 +174,25 @@ if (10 > 1) {
 `,
 			10,
 		},
+		{
+			`
+let f = fn(x) {
+  return x;
+  x + 10;
+};
+f(10);`,
+			10,
+		},
+		{
+			`
+let f = fn(x) {
+   let result = x + 10;
+   return result;
+   return 10;
+};
+f(10);`,
+			20,
+		},
 	}
 
 	for _, tt := range tests {

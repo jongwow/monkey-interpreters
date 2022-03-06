@@ -72,7 +72,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
-
+		return applyFunction(function, args)
 	}
 	return nil
 }
@@ -245,4 +245,36 @@ func evalExpressions(args []ast.Expression, env *object.Environment) []object.Ob
 		result = append(result, evaluated)
 	}
 	return result
+}
+func applyFunction(fn object.Object, args []object.Object) object.Object {
+	function, ok := fn.(*object.Function)
+	if !ok {
+		return newError("not a function: %s", fn.Type())
+	}
+
+	extendedEnv := extendFunctionEnv(function, args)
+	evaluated := Eval(function.Body, extendedEnv)
+	return unwrapReturn(evaluated)
+}
+
+func unwrapReturn(obj object.Object) object.Object {
+	/*
+		이렇게 풀지 않으면 return 문이 함수 몇 개를 타고 올라가 평가를 중단시킬 수도.
+		멈춰야하는 부분은 호출된 함수 몸체에서 진행되는 평가
+	*/
+	if returnValue, ok := obj.(*object.Return); ok {
+		return returnValue.Value
+	}
+	return obj
+}
+
+func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
+	env := object.NewEnclosedEnvironment(fn.Env)
+
+	for paramIdx, param := range fn.Parameters {
+		// 함수 호출 인수(args[paramIdx])를 함수가 가진 파라미터 이름(param.Value)에 바인딩.
+		env.Set(param.Value, args[paramIdx])
+	}
+
+	return env
 }
