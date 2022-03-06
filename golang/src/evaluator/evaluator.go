@@ -29,6 +29,13 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 		return &object.Return{Value: val}
+	case *ast.LetStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+		env.Set(node.Name.Value, val)
+		//return val
 	// 표현식
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -50,15 +57,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return right
 		}
 		return evalInfixExpression(left, node.Operator, right)
-	case *ast.LetStatement:
-		//left :=
-		val := Eval(node.Value, env)
-		if isError(val) {
-			return val
-		}
-		// 이제 뭘 해야할까?
-		// - 값을 갖고 있고 바인딩된 이름 (node.Name)을 알고 있음. 어떻게 해야 이름과 값을 연관?
-		// - env라는 개념이 필요. 환경은 인터프리터가 값을 추적할 때 사용하는 객체. 값을 이름과 연관.
+
+	case *ast.Identifier:
+		return evalIdentifier(node, env)
 	}
 	return nil
 }
@@ -200,6 +201,14 @@ func evalBlockStatements(block *ast.BlockStatement, env *object.Environment) obj
 	}
 	return result
 
+}
+
+func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
+	val, ok := env.Get(node.Value)
+	if !ok {
+		return newError("identifier not found: " + node.Value)
+	}
+	return val
 }
 
 func newError(format string, a ...interface{}) *object.Error {
