@@ -285,3 +285,22 @@ func TestFunctionObject(t *testing.T) {
 		t.Fatalf("body is not %q. got=%q", expectedBody, fn.Body.String())
 	}
 }
+
+func TestFunctionApplication(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let identity = fn(x) { x; }; identity(5);", 5},              // 암묵적인 값 반환.
+		{"let identity = fn(x) { return x; }; identity(5);", 5},       // return 문을 사용해서 반환.
+		{"let double = fn(x) { x * 2; }; double(5);", 10},             // 함수 파라미터를 표현식에서 사용하기
+		{"let add = fn(x, y) { x + y; }; add(5, 5);", 10},             // 다중 파라미터
+		{"let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20}, // 함수에 전달하기 전에 인수 평가
+		{"fn(x) { x; }(5)", 5},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+
+}
