@@ -35,7 +35,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 		env.Set(node.Name.Value, val)
-		//return val
+		return val
 	// 표현식
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
