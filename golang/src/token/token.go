@@ -32,10 +32,12 @@ const (
 	LT        = "<"
 	GT        = ">"
 
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
+	LPAREN   = "("
+	RPAREN   = ")"
+	LBRACE   = "{"
+	RBRACE   = "}"
+	LBRACKET = "["
+	RBRACKET = "]"
 
 	// 예약어
 	FUNCTION = "FUNCTION"
