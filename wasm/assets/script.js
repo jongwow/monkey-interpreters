@@ -5,7 +5,7 @@ WebAssembly.instantiateStreaming(fetch("monkey.wasm"), goWasm.importObject)
         goWasm.run(result.instance)       
 
         document.getElementById("get-html").addEventListener("click", () => {
-            document.body.innerHTML = getHtml()
+            document.body.innerHTML = getHtml("Hello World")
         })
     })
     // https://youtu.be/10Mz3z-W1BE
