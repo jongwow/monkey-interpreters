@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"monkey/evaluator"
-	"monkey/lexer"
-	"monkey/object"
-	"monkey/parser"
+
+	"github.com/jongwow/monkey/evaluator"
+	"github.com/jongwow/monkey/lexer"
+	"github.com/jongwow/monkey/object"
+	"github.com/jongwow/monkey/parser"
 )
 
 const PROMPT = ">> "

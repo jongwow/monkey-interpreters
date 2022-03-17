@@ -2,7 +2,8 @@ package evaluator
 
 import (
 	"fmt"
-	"monkey/object"
+
+	"github.com/jongwow/monkey/object"
 )
 
 var builtins = map[string]*object.Builtin{
