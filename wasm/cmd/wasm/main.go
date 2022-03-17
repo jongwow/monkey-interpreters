@@ -17,4 +17,5 @@ func main() {
 	fmt.Println("Hello Web Assembly from Go\n")
 
 	js.Global().Set("getHtml", GetHtml()) // JS 로 편입 전에;.
+	<-make(chan bool)
 }
