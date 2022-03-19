@@ -2,10 +2,12 @@ const goWasm = new Go()
 
 WebAssembly.instantiateStreaming(fetch("monkey.wasm"), goWasm.importObject)
     .then((result)=>{
-        goWasm.run(result.instance)       
+        goWasm.run(result.instance)
 
         document.getElementById("get-html").addEventListener("click", () => {
-            document.body.innerHTML = getHtml("Hello World")
+            let inputText = document.getElementById("hey").value;
+            getHtml(inputText);
+            // document.body.innerHTML = getHtml("Hello World")
         })
     })
     // https://youtu.be/10Mz3z-W1BE
