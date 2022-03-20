@@ -4,9 +4,9 @@ WebAssembly.instantiateStreaming(fetch("monkey.wasm"), goWasm.importObject)
     .then((result)=>{
         goWasm.run(result.instance)
 
-        document.getElementById("get-html").addEventListener("click", () => {
-            let inputText = document.getElementById("hey").value;
-            getHtml(inputText);
+        document.getElementById("interpretBtn").addEventListener("click", () => {
+            let inputText = document.getElementById("interpretInput").value;
+            monkeyInterpret(inputText);
             // document.body.innerHTML = getHtml("Hello World")
         })
     })
