@@ -2,12 +2,14 @@ package repl
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
-	"monkey/evaluator"
-	"monkey/lexer"
-	"monkey/object"
-	"monkey/parser"
+
+	"github.com/jongwow/monkey/evaluator"
+	"github.com/jongwow/monkey/lexer"
+	"github.com/jongwow/monkey/object"
+	"github.com/jongwow/monkey/parser"
 )
 
 const PROMPT = ">> "
@@ -40,6 +42,36 @@ func Start(in io.Reader, out io.Writer) {
 	}
 }
 
+func StartByLine(done chan bool, in chan string, out chan<- string) {
+	env := object.NewEnvironment()
+	var buffer bytes.Buffer
+	fmt.Println("Executed")
+	for {
+		select {
+		case <-done:
+			return
+		case s := <-in:
+			fmt.Println("Recv: ", s)
+			l := lexer.New(s)
+			p := parser.New(l)
+			pgm := p.ParseProgram()
+			if len(p.Errors()) != 0 {
+				out <- printParserErrorsString(p.Errors())
+				continue
+			}
+			evaluated := evaluator.Eval(pgm, env)
+			if evaluated != nil {
+				buffer.WriteString(evaluated.Inspect())
+				buffer.WriteString("\n")
+				ret := buffer.String()
+				fmt.Println("evaluated: ", ret)
+				out <- ret
+				buffer.Reset()
+			}
+		}
+	}
+}
+
 const MONKEY_FACE = `            __,__
    .--.  .-"     "-.  .--.
   / .. \/  .-. .-.  \/ .. \
@@ -60,4 +92,16 @@ func printParserErrors(out io.Writer, errors []string) {
 	for _, msg := range errors {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
+}
+
+func printParserErrorsString(errors []string) string {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(MONKEY_FACE)
+	buffer.WriteString("Woops! We ran into some monkey business here!\n")
+	buffer.WriteString(" parser errors:\n")
+	for _, msg := range errors {
+		buffer.WriteString("\t" + msg + "\n")
+	}
+	return buffer.String()
 }
